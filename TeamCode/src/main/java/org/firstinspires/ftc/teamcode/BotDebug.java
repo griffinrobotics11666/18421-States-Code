@@ -26,11 +26,10 @@ public class BotDebug extends LinearOpMode {
 
     private GamepadEx gamepad;
 
-    private ElapsedTime shootingClock = new ElapsedTime();
+    private final ElapsedTime shootingClock = new ElapsedTime();
     public static double shootingDelay = 500.0;
     private boolean startedAiming = false;
-    private boolean shooting = false;
-    private static double shootingCooldown = 500.0;
+    public static double shootingCooldown = 500.0;
     private enum ShootingState {
         AIM,
         SHOOT,
@@ -57,7 +56,7 @@ public class BotDebug extends LinearOpMode {
     private double velocity = 0;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         telemetry.setAutoClear(false);
         telemetry.addData("","started OpMode");
         telemetry.update();
@@ -94,15 +93,17 @@ public class BotDebug extends LinearOpMode {
                     if(gamepad.x.justPressed() && !startedAiming){
                         startedAiming = true;
                         bot.telemetry.addData("","You actually pressed x");
-                        bot.turn(currentPose.vec().angleBetween(highGoal)-currentPose.getHeading()-AngleOffset);
+                        double xErr = currentPose.vec().getX()-highGoal.getX();
+                        double yErr = currentPose.vec().getY()-highGoal.getY();
+                        bot.turnAsync(Math.atan(yErr/xErr)-AngleOffset);
                     }
                     if(!bot.isBusy() && startedAiming){
                         bot.telemetry.addData("it stopped turning yo","");
                         double maxVelo = MaxStartVelo;
                         double minVelo = MinStartVelo;
                         double velo = 0;
-                        double x = Math.cos(ShootingAngle);
-                        double y = Math.sin(ShootingAngle);
+                        double x = Math.cos(Math.toRadians(ShootingAngle));
+                        double y = Math.sin(Math.toRadians(ShootingAngle));
                         double i = highGoalZ;
                         while(i>MaxError){
                             velo = (maxVelo+minVelo)/2;
@@ -122,7 +123,6 @@ public class BotDebug extends LinearOpMode {
                         bot.telemetry.addData("found velocity: ", velo/ShooterRadius);
                         if(bot.Shooter.getVelocity(AngleUnit.RADIANS)>=velo/ShooterRadius){
                             shoot = ShootingState.SHOOT;
-                            Log.add("motor sped up");
                             break;
                         }
                         bot.Shooter.setVelocity(velo/ShooterRadius, AngleUnit.RADIANS);
