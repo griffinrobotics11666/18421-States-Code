@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.util.Cycle;
 import org.firstinspires.ftc.teamcode.util.GamepadEx;
 import org.firstinspires.ftc.teamcode.util.MultipleGamepad;
 
@@ -19,8 +20,7 @@ public class BotDebug extends LinearOpMode {
     public static double intakePower= 0.0;
     public static double ringPushingPosition = 0.34;
     public static double ringShootingPosition = 0.1;
-    public static double linearSlidePower = 0.5;
-    public static double armPosition = 0.5;
+    public static double armPosition = 0;
     public static double latchPosition = 0.5;
     public static boolean canDrive = true;
 
@@ -47,12 +47,16 @@ public class BotDebug extends LinearOpMode {
     public static double shootingHeight = 3;
     public static double ShootingAngle = 33;
     public static double ShootingForwardOffset = 18;
-    public static double ShooterRadius = 3;
+    public static double ShooterRadius = 1.5;
+    public static double ShooterMultiplier = 2.55;
+    public static double LineRequirement = 0;
 
     public static double MaxStartVelo = 335;
-    public static double MinStartVelo = 291;
+    public static double MinStartVelo = 0;
+    private Cycle currShot = new Cycle(3);
 
     public static double AngleOffset = 0;
+    private double targetAngle;
     private double velocity = 0;
 
     @Override
@@ -78,32 +82,36 @@ public class BotDebug extends LinearOpMode {
             }
             bot.Intake.setPower(intakePower);
 //            bot.Trigger.setPosition(ringPushingPosition);
-            bot.linearSlide.setPosition(linearSlidePower);
             bot.Arm.setPosition(armPosition);
             bot.Latch.setPosition(latchPosition);
             Pose2d currentPose = bot.getPoseEstimate();
-            bot.telemetry.addData("Shooter Velocity",bot.Shooter.getVelocity());
+            bot.telemetry.addData("Shooter Velocity",bot.Shooter.getVelocity(AngleUnit.RADIANS));
+            bot.telemetry.addData("computed Shooter Velocity", (bot.Shooter.getVelocity()/28)*2*Math.PI);
+            bot.telemetry.addData("Shooter rpm",(bot.Shooter.getVelocity()/28)*60);
+            bot.telemetry.addData("Shooter ticks/s",bot.Shooter.getVelocity());
+            bot.telemetry.addData("Desired rpm", ((velocity/ShooterRadius)/(2*Math.PI))*60);
+            bot.telemetry.addData("Desired ticks/s", ((velocity/ShooterRadius)/(2*Math.PI))*28*ShooterMultiplier);
             bot.telemetry.addData("GamepadEx x",gamepad.x.getState());
             bot.telemetry.addData("GamepadEx x last: ", gamepad.x.getLastState());
             bot.telemetry.addData("startedAiming: ", startedAiming);
             bot.telemetry.addData("velocity for shoot: ", velocity);
+            bot.telemetry.addData("Target angle", targetAngle);
 //Shooting Code
             switch(shoot){
                 case AIM: {
-                    if(gamepad.x.justPressed() && !startedAiming){
+                    if(gamepad.x.justPressed() && !startedAiming && currentPose.getX()<=LineRequirement){
                         startedAiming = true;
-                        bot.telemetry.addData("","You actually pressed x");
-                        bot.turnAsync(highGoal.minus(currentPose.vec()).angle()-currentPose.getHeading()-AngleOffset);
+                        targetAngle = Math.atan2(highGoal.minus(currentPose.vec()).getY(),highGoal.minus(currentPose.vec()).getX())-currentPose.getHeading()-AngleOffset;
+                        bot.turnAsync(Math.atan2(highGoal.minus(currentPose.vec()).getY(),highGoal.minus(currentPose.vec()).getX())-currentPose.getHeading()-AngleOffset);
                     }
                     if(!bot.isBusy() && startedAiming){
-                        bot.telemetry.addData("it stopped turning yo","");
                         double maxVelo = MaxStartVelo;
                         double minVelo = MinStartVelo;
                         double velo = 0;
                         double x = Math.cos(Math.toRadians(ShootingAngle));
                         double y = Math.sin(Math.toRadians(ShootingAngle));
                         double i = highGoalZ;
-                        while(i>MaxError){
+                        while(Math.abs(i)>MaxError){
                             velo = (maxVelo+minVelo)/2;
                             double t = highGoal.distTo(currentPose.vec())/(velo*x);
                             i = highGoalZ-(((-385.827/2)*t*t)+(velo*y*t)+shootingHeight);
@@ -119,11 +127,12 @@ public class BotDebug extends LinearOpMode {
                         }
                         velocity = velo;
                         bot.telemetry.addData("found velocity: ", velo/ShooterRadius);
-                        if(bot.Shooter.getVelocity(AngleUnit.RADIANS)>=velo/ShooterRadius){
+                        if(bot.Shooter.getVelocity()>=((velo/ShooterRadius)/(2*Math.PI))*28*ShooterMultiplier){
                             shoot = ShootingState.SHOOT;
+                            currShot.setValue(1);
                             break;
                         }
-                        bot.Shooter.setVelocity(velo/ShooterRadius, AngleUnit.RADIANS);
+                        bot.Shooter.setVelocity(((velo/ShooterRadius)/(2*Math.PI))*28*ShooterMultiplier);
                     }
                     break;
                 }
@@ -144,8 +153,14 @@ public class BotDebug extends LinearOpMode {
                 case WAIT: {
                     if(shootingClock.milliseconds()>= shootingCooldown){
                         shootingClock.reset();
-                        shoot= ShootingState.AIM;
-                        startedAiming = false;
+                        if(currShot.getValue()==currShot.numValues() || bot.numRings == 0){
+                            shoot= ShootingState.AIM;
+                            startedAiming = false;
+                        }
+                        else {
+                            shoot = ShootingState.SHOOT;
+                        }
+                        currShot.cycle();
                         break;
                     }
                 }

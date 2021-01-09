@@ -41,6 +41,9 @@ public class Cycle {
         }
     }
 
+    public int numValues(){
+        return numValues;
+    }
     public int getValue(){
         return value;
     }

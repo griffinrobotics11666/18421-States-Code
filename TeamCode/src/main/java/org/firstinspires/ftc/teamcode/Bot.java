@@ -10,6 +10,8 @@ import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.drive.DriveSignal;
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
+
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.roadrunnerEx.GVFFollowerEx;
 import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
 import com.acmerobotics.roadrunner.followers.PathFollower;
@@ -17,6 +19,8 @@ import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.path.Path;
 import com.acmerobotics.roadrunner.path.PathBuilder;
+import com.acmerobotics.roadrunner.path.heading.HeadingInterpolator;
+import com.acmerobotics.roadrunner.path.heading.SplineInterpolator;
 import com.acmerobotics.roadrunner.profile.MotionProfile;
 import com.acmerobotics.roadrunner.profile.MotionProfileGenerator;
 import com.acmerobotics.roadrunner.profile.MotionState;
@@ -135,6 +139,7 @@ public class Bot extends MecanumDrive {
     private MotionProfile turnProfile;
     private double turnStart;
     private Pose2d lastPoseOnTurn;
+    public static double MaxJerk = 70;
 
     //Trajectory Following Bits
     private TrajectoryVelocityConstraint velConstraint;
@@ -257,9 +262,9 @@ public class Bot extends MecanumDrive {
             setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, MOTOR_VELO_PID);
         }
 
-        Shooter.setVelocityPIDFCoefficients(
-                SHOOTER_PID.p, SHOOTER_PID.i, SHOOTER_PID.d, SHOOTER_PID.f * 12 / batteryVoltageSensor.getVoltage()
-        );
+//        Shooter.setVelocityPIDFCoefficients(
+//                SHOOTER_PID.p, SHOOTER_PID.i, SHOOTER_PID.d, SHOOTER_PID.f * 12 / batteryVoltageSensor.getVoltage()
+//        );
         
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -359,7 +364,8 @@ public class Bot extends MecanumDrive {
                 new MotionState(heading, 0, 0, 0),
                 new MotionState(heading + angle, 0, 0, 0),
                 DriveConstants.MAX_ANG_VEL,
-                MAX_ANG_ACCEL
+                MAX_ANG_ACCEL,
+                Math.toRadians(MaxJerk)
         );
 
         turnStart = clock.seconds();
@@ -515,6 +521,9 @@ public class Bot extends MecanumDrive {
         camera.setPipeline(new RingPipeline());
 
         //Experimental Ring Capacity Detection
+        telemetry.addData("Intake current", Intake.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("Shooter current", Shooter.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("Num rings", numRings);
         if(Intake.getCurrent(CurrentUnit.AMPS)<4.0){
             if(feedingPeak>5.0){
                 numRings++;
@@ -528,7 +537,7 @@ public class Bot extends MecanumDrive {
         }
 
         if(Shooter.getCurrent(CurrentUnit.AMPS)<2.0){
-            if(shootingPeak>4.0 && shootingPeak<6.0){
+            if(shootingPeak>2.0 && shootingPeak<6.0){
                 numRings--;
             }
             shootingPeak = 0.0;
