@@ -93,9 +93,7 @@ public class BotDebug extends LinearOpMode {
                     if(gamepad.x.justPressed() && !startedAiming){
                         startedAiming = true;
                         bot.telemetry.addData("","You actually pressed x");
-                        double xErr = currentPose.vec().getX()-highGoal.getX();
-                        double yErr = currentPose.vec().getY()-highGoal.getY();
-                        bot.turnAsync(Math.atan(yErr/xErr)-AngleOffset);
+                        bot.turnAsync(highGoal.minus(currentPose.vec()).angle()-currentPose.getHeading()-AngleOffset);
                     }
                     if(!bot.isBusy() && startedAiming){
                         bot.telemetry.addData("it stopped turning yo","");
