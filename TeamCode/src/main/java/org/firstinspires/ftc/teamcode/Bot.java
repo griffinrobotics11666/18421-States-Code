@@ -140,6 +140,7 @@ public class Bot extends MecanumDrive {
     private double turnStart;
     private Pose2d lastPoseOnTurn;
     public static double MaxJerk = 70;
+    private double reversed = 0;
 
     //Trajectory Following Bits
     private TrajectoryVelocityConstraint velConstraint;
@@ -360,9 +361,10 @@ public class Bot extends MecanumDrive {
 
         lastPoseOnTurn = getPoseEstimate();
 
+        reversed = Math.signum(angle);
         turnProfile = MotionProfileGenerator.generateSimpleMotionProfile(
                 new MotionState(heading, 0, 0, 0),
-                new MotionState(heading + angle, 0, 0, 0),
+                new MotionState(heading + Math.abs(angle), 0, 0, 0),
                 DriveConstants.MAX_ANG_VEL,
                 MAX_ANG_ACCEL,
                 Math.toRadians(MaxJerk)
@@ -497,15 +499,16 @@ public class Bot extends MecanumDrive {
         telemetry.addData("yError", lastError.getY());
         telemetry.addData("headingError", lastError.getHeading());
 
-        //Vuforia Localization
-//        if(vuforiaLocalizer.targetVisible){
-//            /*There's an option to disable automatic vuforia localization (usingVuforia)
-//              And a velocity cap on it so that vuforia doesn't try to read blurry images
-//             */
-//            if(currentVelocity.getX()+currentVelocity.getY()+currentVelocity.getHeading()>0.5 && usingVuforia) {
-//                setPoseEstimate(vuforiaLocalizer.lastPose);
-//            }
-//        }
+//        Vuforia Localization
+        if(vuforiaLocalizer.targetVisible){
+            /*There's an option to disable automatic vuforia localization (usingVuforia)
+              And a velocity cap on it so that vuforia doesn't try to read blurry images
+             */
+            if(currentVelocity.getX()+currentVelocity.getY()+currentVelocity.getHeading()>0.5 && usingVuforia) {
+                fieldOverlay.setStroke("#eb4034");
+                DashboardUtil.drawRobot(fieldOverlay, vuforiaLocalizer.lastPose);
+            }
+        }
         vuforiaLocalizer.update();
 
         //Tfod Ring Detection
@@ -565,15 +568,15 @@ public class Bot extends MecanumDrive {
                 double targetOmega = targetState.getV();
                 double targetAlpha = targetState.getA();
                 setDriveSignal(new DriveSignal(new Pose2d(
-                        0, 0, targetOmega + correction
+                        0, 0, targetOmega + correction*reversed
                 ), new Pose2d(
                         0, 0, targetAlpha
                 )));
 
                 Pose2d newPose = lastPoseOnTurn.copy(lastPoseOnTurn.getX(), lastPoseOnTurn.getY(), targetState.getX());
 
-//                fieldOverlay.setStroke("#4CAF50");
-//                DashboardUtil.drawRobot(fieldOverlay, newPose);
+                fieldOverlay.setStroke("#4CAF50");
+                DashboardUtil.drawRobot(fieldOverlay, newPose);
 
                 if (t >= turnProfile.duration()) {
                     mode = Mode.IDLE;
@@ -611,8 +614,7 @@ public class Bot extends MecanumDrive {
                 fieldOverlay.setStrokeWidth(1);
                 fieldOverlay.setStroke("#4CAF50");
                 DashboardUtil.drawSampledPath(fieldOverlay, path);
-                double t = follower.elapsedTime();
-                DashboardUtil.drawRobot(fieldOverlay, path.get(t));
+                DashboardUtil.drawRobot(fieldOverlay, path.get(path.project(currentPose.vec(), 7)));
 
                 fieldOverlay.setStroke("#3F51B5");
                 DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);

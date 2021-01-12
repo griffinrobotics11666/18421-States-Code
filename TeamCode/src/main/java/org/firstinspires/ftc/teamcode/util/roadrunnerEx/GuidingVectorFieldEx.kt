@@ -58,7 +58,7 @@ class GuidingVectorFieldEx(
                 avoidance = avoidance.plus(obstacle.get(x,y))
             }
         }
-        val vector = tangent - normal * kN * errorMapFunc(error) + avoidance
+        val vector = tangent - (normal * kN * errorMapFunc(error)) + avoidance
         return GVFResultEx(
                 vector / vector.norm(),
                 pathPoint,
