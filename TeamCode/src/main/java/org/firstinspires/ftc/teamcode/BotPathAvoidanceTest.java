@@ -21,8 +21,8 @@ public class BotPathAvoidanceTest extends LinearOpMode {
 
         waitForStart();
 
-        drive.followPath(test, new Obstacle[] {
-            new Obstacle(new Vector2d(18, -6), 6)
-        });
+//        drive.followPath(test, new Obstacle[] {
+//            new Obstacle(new Vector2d(18, -6), 6)
+//        });
     }
 }

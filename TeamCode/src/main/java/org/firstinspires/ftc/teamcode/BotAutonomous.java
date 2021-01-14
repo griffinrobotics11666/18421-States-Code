@@ -20,9 +20,9 @@ public class BotAutonomous extends LinearOpMode {
     private static double triggerStart = 0.34;
     private static double triggerEnd = 0.1;
     private static double armDown = 1;
-    private static double armUp = 0;
+    private static double armUp = 0.1;
 
-    private Pose2d A = new Pose2d(-6,-58, Math.toRadians(-90));
+    private Pose2d A = new Pose2d(12,-38, Math.toRadians(-180));
     private Pose2d B = new Pose2d(38, -48, Math.toRadians(0));
     private Pose2d C;
 
@@ -31,7 +31,6 @@ public class BotAutonomous extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        Log.clear();
         Bot drive = new Bot(hardwareMap);
         drive.telemetry.addTelemetry(telemetry);
         drive.usingVuforia = false;
@@ -73,15 +72,19 @@ public class BotAutonomous extends LinearOpMode {
         drive.followTrajectory(followStack);
         drive.detectStarterStack(50);
         Trajectory moveWobble = null;
-        if(drive.detectedStack == null){
+        if(drive.detectedStack == "None"){
             wobbleSpot = A;
             moveWobble = drive.trajectoryBuilder(followStack.end())
                     .splineToSplineHeading(wobbleSpot, 0.0)
                     .build();
             drive.followTrajectory(moveWobble);
-            for(double i = 0.5; i <= 1; i+=0.0005){
+            for(double i = 0.5; i <= 0.99; i+=0.0005){
                 drive.Arm.setPosition(i);
             }
+            Trajectory letGo = drive.trajectoryBuilder(moveWobble.end())
+                    .lineToLinearHeading(new Pose2d(moveWobble.end().getX()+6, moveWobble.end().getY()+6, Math.toRadians(1.0)))
+                    .build();
+            drive.followTrajectory(letGo);
         }
         if(drive.detectedStack == "Single"){
             wobbleSpot = B;
@@ -90,7 +93,7 @@ public class BotAutonomous extends LinearOpMode {
                     .splineToSplineHeading(wobbleSpot, 0.0)
                     .build();
             drive.followTrajectory(moveWobble);
-            for(double i = 0.5; i <= 1; i+=0.0005){
+            for(double i = 0.5; i <= 0.99; i+=0.0005){
                 drive.Arm.setPosition(i);
             }
         }
@@ -102,7 +105,7 @@ public class BotAutonomous extends LinearOpMode {
                     .splineToConstantHeading(new Vector2d(40, -56), 0.0)
                     .build();
             drive.followTrajectory(moveWobble);
-            for(double i = 0.5; i <= 1; i+=0.0005){
+            for(double i = 0.5; i <= 0.99; i+=0.0005){
                 drive.Arm.setPosition(i);
             }
             Trajectory letGo = drive.trajectoryBuilder(moveWobble.end())

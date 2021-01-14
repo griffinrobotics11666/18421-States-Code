@@ -13,6 +13,8 @@ import com.acmerobotics.roadrunner.drive.MecanumDrive;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.roadrunnerEx.GVFFollowerEx;
+
+import com.acmerobotics.roadrunner.followers.GVFFollower;
 import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
 import com.acmerobotics.roadrunner.followers.PathFollower;
 import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
@@ -140,7 +142,6 @@ public class Bot extends MecanumDrive {
     private double turnStart;
     private Pose2d lastPoseOnTurn;
     public static double MaxJerk = 70;
-    private double reversed = 0;
 
     //Trajectory Following Bits
     private TrajectoryVelocityConstraint velConstraint;
@@ -148,7 +149,7 @@ public class Bot extends MecanumDrive {
     private TrajectoryFollower follower;
 
     //Path Following Bobs
-    private GVFFollowerEx pathFollower;
+    private PathFollower pathFollower;
 
     //Pose History Variables (For displaying trajectories on dashboard)
     public static int POSE_HISTORY_LIMIT = 100;
@@ -197,7 +198,7 @@ public class Bot extends MecanumDrive {
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
                 new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
 
-        pathFollower = new GVFFollowerEx(MAX_VEL, MAX_ACCEL, new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 2, 1);
+        pathFollower = new GVFFollower(MAX_VEL, MAX_ACCEL, new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 2, 1);
 
         poseHistory = new LinkedList<>();
 
@@ -338,19 +339,19 @@ public class Bot extends MecanumDrive {
         pathFollower.followPath(path);
         mode = Mode.FOLLOW_PATH;
     }
-    public void followPathAsync(Path path, Obstacle[] obstacles){
-        pathFollower.followPath(path, obstacles);
-        mode = Mode.FOLLOW_PATH;
-    }
+//    public void followPathAsync(Path path, Obstacle[] obstacles){
+//        pathFollower.followPath(path, obstacles);
+//        mode = Mode.FOLLOW_PATH;
+//    }
 
     public void followPath(Path path) {
         followPathAsync(path);
         waitForIdle();
     }
-    public void followPath(Path path, Obstacle[] obstacles) {
-        followPathAsync(path, obstacles);
-        waitForIdle();
-    }
+//    public void followPath(Path path, Obstacle[] obstacles) {
+//        followPathAsync(path, obstacles);
+//        waitForIdle();
+//    }
 
     public void forceIdle() {
         mode = Mode.IDLE;
@@ -361,10 +362,9 @@ public class Bot extends MecanumDrive {
 
         lastPoseOnTurn = getPoseEstimate();
 
-        reversed = Math.signum(angle);
         turnProfile = MotionProfileGenerator.generateSimpleMotionProfile(
                 new MotionState(heading, 0, 0, 0),
-                new MotionState(heading + Math.abs(angle), 0, 0, 0),
+                new MotionState(heading + angle, 0, 0, 0),
                 DriveConstants.MAX_ANG_VEL,
                 MAX_ANG_ACCEL,
                 Math.toRadians(MaxJerk)
@@ -414,7 +414,7 @@ public class Bot extends MecanumDrive {
         int quad = 0;
         for(int i = 0; i<iterations; i++){
             tfod.update();
-            if(tfod.targetVisible){
+            if(tfod.targetVisible && tfod.objectLabels.size() > 0){
                 if(tfod.objectLabels.get(0)=="Single"){
                     single++;
                 }
@@ -446,7 +446,7 @@ public class Bot extends MecanumDrive {
         int quad = 0;
         for(int i = 0; i<iterations; i++){
             tfod.update();
-            if(tfod.targetVisible){
+            if(tfod.targetVisible && tfod.objectLabels.size() > 0){
                 if(tfod.objectLabels.get(0)=="Single"){
                     single++;
                 }
@@ -499,16 +499,15 @@ public class Bot extends MecanumDrive {
         telemetry.addData("yError", lastError.getY());
         telemetry.addData("headingError", lastError.getHeading());
 
-//        Vuforia Localization
-        if(vuforiaLocalizer.targetVisible){
-            /*There's an option to disable automatic vuforia localization (usingVuforia)
-              And a velocity cap on it so that vuforia doesn't try to read blurry images
-             */
-            if(currentVelocity.getX()+currentVelocity.getY()+currentVelocity.getHeading()>0.5 && usingVuforia) {
-                fieldOverlay.setStroke("#eb4034");
-                DashboardUtil.drawRobot(fieldOverlay, vuforiaLocalizer.lastPose);
-            }
-        }
+        //Vuforia Localization
+//        if(vuforiaLocalizer.targetVisible){
+//            /*There's an option to disable automatic vuforia localization (usingVuforia)
+//              And a velocity cap on it so that vuforia doesn't try to read blurry images
+//             */
+//            if(currentVelocity.getX()+currentVelocity.getY()+currentVelocity.getHeading()>0.5 && usingVuforia) {
+//                setPoseEstimate(vuforiaLocalizer.lastPose);
+//            }
+//        }
         vuforiaLocalizer.update();
 
         //Tfod Ring Detection
@@ -568,15 +567,15 @@ public class Bot extends MecanumDrive {
                 double targetOmega = targetState.getV();
                 double targetAlpha = targetState.getA();
                 setDriveSignal(new DriveSignal(new Pose2d(
-                        0, 0, targetOmega + correction*reversed
+                        0, 0, targetOmega + correction
                 ), new Pose2d(
                         0, 0, targetAlpha
                 )));
 
                 Pose2d newPose = lastPoseOnTurn.copy(lastPoseOnTurn.getX(), lastPoseOnTurn.getY(), targetState.getX());
 
-                fieldOverlay.setStroke("#4CAF50");
-                DashboardUtil.drawRobot(fieldOverlay, newPose);
+//                fieldOverlay.setStroke("#4CAF50");
+//                DashboardUtil.drawRobot(fieldOverlay, newPose);
 
                 if (t >= turnProfile.duration()) {
                     mode = Mode.IDLE;
@@ -614,7 +613,8 @@ public class Bot extends MecanumDrive {
                 fieldOverlay.setStrokeWidth(1);
                 fieldOverlay.setStroke("#4CAF50");
                 DashboardUtil.drawSampledPath(fieldOverlay, path);
-                DashboardUtil.drawRobot(fieldOverlay, path.get(path.project(currentPose.vec(), 7)));
+                double t = follower.elapsedTime();
+                DashboardUtil.drawRobot(fieldOverlay, path.get(t));
 
                 fieldOverlay.setStroke("#3F51B5");
                 DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);

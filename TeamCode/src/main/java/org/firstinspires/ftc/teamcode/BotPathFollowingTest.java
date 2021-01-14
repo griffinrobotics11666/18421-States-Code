@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.path.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -13,8 +14,7 @@ public class BotPathFollowingTest extends LinearOpMode {
         drive.telemetry.addTelemetry(telemetry);
 
         Path test = drive.pathBuilder(new Pose2d())
-                .lineToLinearHeading(new Pose2d(36, -12, Math.toRadians(90)))
-                .forward(24)
+                .lineTo(new Vector2d(36, -12))
                 .build();
 
         waitForStart();

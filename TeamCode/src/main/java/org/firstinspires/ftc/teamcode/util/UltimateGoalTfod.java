@@ -7,6 +7,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,8 +21,8 @@ public class UltimateGoalTfod {
     private TFObjectDetector tfod;
 
     public boolean targetVisible = false;
-    public List<Recognition> recognizedObjects;
-    public List<String> objectLabels;
+    public List<Recognition> recognizedObjects = null;
+    public List<String> objectLabels = new ArrayList<>();
 
     public UltimateGoalTfod(VuforiaLocalizer vuforia, HardwareMap hardwareMap){
         this.vuforia = vuforia;

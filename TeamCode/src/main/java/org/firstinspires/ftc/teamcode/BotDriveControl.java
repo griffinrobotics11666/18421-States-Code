@@ -104,9 +104,9 @@ public class BotDriveControl extends LinearOpMode {
 
                     //Wobble Cycle
                     switch(wobbleMode.getValue()){
-                        case 1: drive.Arm.setPosition(1.0);
+                        case 1: drive.Arm.setPosition(0.97);
                         case 2: drive.Arm.setPosition(0.4);
-                        case 3: drive.Arm.setPosition(0.8);
+                        case 3: drive.Arm.setPosition(0.7);
                     }
                     if(gamepad.a.justPressed()){
                         wobbleMode.cycle();
