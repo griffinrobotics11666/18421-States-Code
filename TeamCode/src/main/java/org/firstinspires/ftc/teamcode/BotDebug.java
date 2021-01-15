@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -28,7 +31,7 @@ public class BotDebug extends LinearOpMode {
 
     private final ElapsedTime shootingClock = new ElapsedTime();
     public static double shootingDelay = 500.0;
-    private boolean startedAiming = false;
+    private Cycle turnState = new Cycle(3);
     public static double shootingCooldown = 500.0;
     private enum ShootingState {
         AIM,
@@ -54,6 +57,7 @@ public class BotDebug extends LinearOpMode {
     public static double MaxStartVelo = 335;
     public static double MinStartVelo = 0;
     private Cycle currShot = new Cycle(3);
+    private PIDFController headingController = new PIDFController(Bot.HEADING_PID);
 
     public static double AngleOffset = 0;
     private double targetAngle;
@@ -71,13 +75,14 @@ public class BotDebug extends LinearOpMode {
         bot.telemetry.addTelemetry(telemetry);
         bot.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bot.setPoseEstimate(new Pose2d(-63, -25, 0));
+        headingController.setInputBounds(-Math.PI, Math.PI);
         bot.initVision();
         bot.telemetry.addData("","Done Initializing");
         bot.telemetry.update();
         waitForStart();
         telemetry.setAutoClear(true);
         while (opModeIsActive()) {
-            if(!startedAiming){
+            if(turnState.getValue()==1){
                 bot.Shooter.setVelocity(shooterVelocity);
             }
             bot.Intake.setPower(intakePower);
@@ -93,18 +98,30 @@ public class BotDebug extends LinearOpMode {
             bot.telemetry.addData("Desired ticks/s", ((velocity/ShooterRadius)/(2*Math.PI))*28*ShooterMultiplier);
             bot.telemetry.addData("GamepadEx x",gamepad.x.getState());
             bot.telemetry.addData("GamepadEx x last: ", gamepad.x.getLastState());
-            bot.telemetry.addData("startedAiming: ", startedAiming);
+            bot.telemetry.addData("turnState: ", turnState.getValue());
             bot.telemetry.addData("velocity for shoot: ", velocity);
             bot.telemetry.addData("Target angle", targetAngle);
 //Shooting Code
             switch(shoot){
                 case AIM: {
-                    if(gamepad.x.justPressed() && !startedAiming && currentPose.getX()<=LineRequirement){
-                        startedAiming = true;
+                    if(gamepad.x.justPressed() && turnState.getValue() == 1 && currentPose.getX()<=LineRequirement){
+                        turnState.cycle();
                         targetAngle = Math.atan2(highGoal.minus(currentPose.vec()).getY(),highGoal.minus(currentPose.vec()).getX())-currentPose.getHeading()-AngleOffset;
-                        bot.turnAsync(Math.atan2(highGoal.minus(currentPose.vec()).getY(),highGoal.minus(currentPose.vec()).getX())-currentPose.getHeading()-AngleOffset);
+                        headingController.setTargetPosition(targetAngle);
                     }
-                    if(!bot.isBusy() && startedAiming){
+                    if(turnState.getValue()==2){
+                        double headingInput = (headingController.update(currentPose.getHeading())
+                                * BotConstants.kV)
+                                * BotConstants.TRACK_WIDTH;
+                        if(headingController.getLastError()<5){
+                            turnState.cycle();
+                            break;
+                        }
+                        else {
+                            bot.setWeightedDrivePower(new Pose2d(new Vector2d(), headingInput));
+                        }
+                    }
+                    if(turnState.getValue()==3){
                         double maxVelo = MaxStartVelo;
                         double minVelo = MinStartVelo;
                         double velo = 0;
@@ -155,7 +172,7 @@ public class BotDebug extends LinearOpMode {
                         shootingClock.reset();
                         if(currShot.getValue()==currShot.numValues() || bot.numRings == 0){
                             shoot= ShootingState.AIM;
-                            startedAiming = false;
+                            turnState.cycle();
                         }
                         else {
                             shoot = ShootingState.SHOOT;
@@ -166,7 +183,7 @@ public class BotDebug extends LinearOpMode {
                 }
             }
 
-            if(canDrive && !startedAiming){
+            if(canDrive && turnState.getValue()==1){
                 // Create a vector from the gamepad x/y inputs
                 // Then, rotate that vector by the inverse of that heading
                 Vector2d input = new Vector2d(

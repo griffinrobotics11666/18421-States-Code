@@ -499,15 +499,15 @@ public class Bot extends MecanumDrive {
         telemetry.addData("yError", lastError.getY());
         telemetry.addData("headingError", lastError.getHeading());
 
-        //Vuforia Localization
-//        if(vuforiaLocalizer.targetVisible){
-//            /*There's an option to disable automatic vuforia localization (usingVuforia)
-//              And a velocity cap on it so that vuforia doesn't try to read blurry images
-//             */
-//            if(currentVelocity.getX()+currentVelocity.getY()+currentVelocity.getHeading()>0.5 && usingVuforia) {
-//                setPoseEstimate(vuforiaLocalizer.lastPose);
-//            }
-//        }
+//        Vuforia Localization
+        if(vuforiaLocalizer.targetVisible){
+            /*There's an option to disable automatic vuforia localization (usingVuforia)
+              And a velocity cap on it so that vuforia doesn't try to read blurry images
+             */
+            if(currentVelocity.getX()+currentVelocity.getY()+currentVelocity.getHeading()<0.5 && usingVuforia) {
+                setPoseEstimate(vuforiaLocalizer.lastPose);
+            }
+        }
         vuforiaLocalizer.update();
 
         //Tfod Ring Detection
@@ -520,7 +520,7 @@ public class Bot extends MecanumDrive {
 //        tfod.update();
 
         //OpenCV debugging
-        camera.setPipeline(new RingPipeline());
+//        camera.setPipeline(new RingPipeline());
 
         //Experimental Ring Capacity Detection
         telemetry.addData("Intake current", Intake.getCurrent(CurrentUnit.AMPS));
