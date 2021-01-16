@@ -418,12 +418,12 @@ public class Bot extends MecanumDrive {
         quad = 0;
         for(int i = 0; i<iterations; i++){
             tfod.update();
-            if(tfod.targetVisible && tfod.recognizedObjects.size() > 0){
+            if(tfod.targetVisible){
                 actuallySawSomething = true;
-                if(tfod.recognizedObjects.get(0).getLabel()=="Single"){
+                if(tfod.objectLabels.get(0)=="Single"){
                     single++;
                 }
-                else if(tfod.recognizedObjects.get(0).getLabel()=="Quad"){
+                else if(tfod.objectLabels.get(0)=="Quad"){
                     quad++;
                 }
             }

@@ -21,7 +21,6 @@ public class UltimateGoalTfod {
     private TFObjectDetector tfod;
 
     public boolean targetVisible = false;
-    public List<Recognition> recognizedObjects = null;
     public List<String> objectLabels = new ArrayList<>();
 
     public UltimateGoalTfod(VuforiaLocalizer vuforia, HardwareMap hardwareMap){
@@ -50,12 +49,14 @@ public class UltimateGoalTfod {
     public void update(){
         // getUpdatedRecognitions() will return null if no new information is available since
         // the last time that call was made.
-        recognizedObjects = tfod.getUpdatedRecognitions();
+        List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
         targetVisible = false;
-        if(recognizedObjects != null){
+        objectLabels.clear();
+        if (updatedRecognitions != null) {
             targetVisible = true;
-            objectLabels.clear();
-            for(Recognition recognition : recognizedObjects){
+            // step through the list of recognitions and display boundary info.
+            int i = 0;
+            for (Recognition recognition : updatedRecognitions) {
                 objectLabels.add(recognition.getLabel());
             }
         }
