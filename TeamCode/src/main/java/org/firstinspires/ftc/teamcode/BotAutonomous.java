@@ -144,8 +144,5 @@ public class BotAutonomous extends LinearOpMode {
 
         //Woohoo!! 56 points!!!
         drive.deactivateVision();
-        drive.telemetry.addData("none, single, quad", drive.none + ", " + drive.single + ", " + drive.quad);
-        drive.telemetry.addData("actually saw something: ",drive.actuallySawSomething);
-        drive.telemetry.update();
     }
 }

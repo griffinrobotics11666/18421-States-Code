@@ -285,7 +285,7 @@ public class Bot extends MecanumDrive {
              * If no camera monitor is desired, use the parameter-less constructor instead (commented out below).
              */
             int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-            VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+            VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
     
             // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
     
@@ -503,6 +503,9 @@ public class Bot extends MecanumDrive {
         telemetry.addData("xError", lastError.getX());
         telemetry.addData("yError", lastError.getY());
         telemetry.addData("headingError", lastError.getHeading());
+
+        telemetry.addData("none, single, quad", none + ", " + single + ", " + quad);
+        telemetry.addData("actually saw something: ",actuallySawSomething);
 
 //        Vuforia Localization
         if(vuforiaLocalizer.targetVisible){
