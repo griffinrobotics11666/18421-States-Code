@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -11,6 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @Autonomous(name="Autonomous", group = "Discopolus")
+@Config
 /**
  * Team 18421's Autonomous for the 2020-2021 Ultimate Goal season.
  */
@@ -19,7 +21,7 @@ public class BotAutonomous extends LinearOpMode {
 
     private static double triggerStart = 0.34;
     private static double triggerEnd = 0.1;
-    private static double armDown = 1;
+    private static double armDown = 0.99;
     private static double armUp = 0.1;
     public static String stack = "None";
 
@@ -61,15 +63,15 @@ public class BotAutonomous extends LinearOpMode {
                 .splineTo(new Vector2d(-23, -20),0.0)
                 .splineToSplineHeading(new Pose2d(25, -36, Math.toRadians(-90)), 0.0)
                 .build();
-        Trajectory B1End = drive.trajectoryBuilder(B1.end())
-                .lineToSplineHeading(new Pose2d(B1.end().getX()+6, B1.end().getY()+6, Math.toRadians(-180.0)))
+        Trajectory B1End = drive.trajectoryBuilder(B1.end(), 0)
+                .lineToSplineHeading(new Pose2d(B1.end().getX()-6, B1.end().getY()+6, Math.toRadians(-180.0)))
                 .build();
         Trajectory C1 = drive.trajectoryBuilder(followStack.end(), Math.toRadians(-90))
                 .splineToConstantHeading(new Vector2d(-37,-56), 0)
                 .splineToSplineHeading(new Pose2d(48, -60, Math.toRadians(-90)), 0.0)
                 .build();
-        Trajectory C1End = drive.trajectoryBuilder(C1.end())
-                .lineToSplineHeading(new Pose2d(C1.end().getX()-6, C1.end().getY(), 0.0))
+        Trajectory C1End = drive.trajectoryBuilder(C1.end(), 0)
+                .lineToSplineHeading(new Pose2d(C1.end().getX()-6, C1.end().getY()-6, 0.0))
                 .build();
 
         drive.telemetry.addData("Ready!", "");
@@ -110,7 +112,7 @@ public class BotAutonomous extends LinearOpMode {
 
         //Moves loaded wobble goal accordingly
         drive.followTrajectory(wobble1);
-        for(double i = 0; i <= 0.99; i+=0.0005){
+        for(double i = armUp; i <= armDown; i+=0.0005){
             drive.Arm.setPosition(i);
         }
         sleep(300);
