@@ -420,10 +420,10 @@ public class Bot extends MecanumDrive {
             tfod.update();
             if(tfod.targetVisible){
                 actuallySawSomething = true;
-                if(tfod.objectLabels.get(0)=="Single"){
+                if(tfod.objectLabels[0]=="Single"){
                     single++;
                 }
-                else if(tfod.objectLabels.get(0)=="Quad"){
+                else if(tfod.objectLabels[0]=="Quad"){
                     quad++;
                 }
             }
@@ -443,38 +443,38 @@ public class Bot extends MecanumDrive {
         tfod.deactivate();
     }
 
-    public void detectStarterStackAsync(int iterations){
-        tfod.activate();
-        detectedStack = null;
-        int none = 0;
-        int single = 0;
-        int quad = 0;
-        for(int i = 0; i<iterations; i++){
-            tfod.update();
-            if(tfod.targetVisible && tfod.objectLabels.size() > 0){
-                if(tfod.objectLabels.get(0)=="Single"){
-                    single++;
-                }
-                else if(tfod.objectLabels.get(0)=="Quad"){
-                    quad++;
-                }
-            }
-            else {
-                none++;
-            }
-            update();
-        }
-        if(none > single && none > quad){
-            detectedStack = "None";
-        }
-        else if(single > none && single > quad){
-            detectedStack = "Single";
-        }
-        else if(quad > single && quad > none){
-            detectedStack = "Quad";
-        }
-        tfod.deactivate();
-    }
+//    public void detectStarterStackAsync(int iterations){
+//        tfod.activate();
+//        detectedStack = null;
+//        int none = 0;
+//        int single = 0;
+//        int quad = 0;
+//        for(int i = 0; i<iterations; i++){
+//            tfod.update();
+//            if(tfod.targetVisible && tfod.objectLabels.size() > 0){
+//                if(tfod.objectLabels.get(0)=="Single"){
+//                    single++;
+//                }
+//                else if(tfod.objectLabels.get(0)=="Quad"){
+//                    quad++;
+//                }
+//            }
+//            else {
+//                none++;
+//            }
+//            update();
+//        }
+//        if(none > single && none > quad){
+//            detectedStack = "None";
+//        }
+//        else if(single > none && single > quad){
+//            detectedStack = "Single";
+//        }
+//        else if(quad > single && quad > none){
+//            detectedStack = "Quad";
+//        }
+//        tfod.deactivate();
+//    }
 
     public void update() {
         updatePoseEstimate();

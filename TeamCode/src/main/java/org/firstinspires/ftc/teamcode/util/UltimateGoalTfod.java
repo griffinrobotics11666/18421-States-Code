@@ -6,6 +6,7 @@ import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +22,9 @@ public class UltimateGoalTfod {
     private TFObjectDetector tfod;
 
     public boolean targetVisible = false;
-    public List<String> objectLabels = new ArrayList<>();
+    public String[] objectLabels = new String[0];
 
-    public UltimateGoalTfod(VuforiaLocalizer vuforia, HardwareMap hardwareMap){
+    public UltimateGoalTfod(VuforiaLocalizer vuforia, @NotNull HardwareMap hardwareMap){
         this.vuforia = vuforia;
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -51,13 +52,13 @@ public class UltimateGoalTfod {
         // the last time that call was made.
         List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
         targetVisible = false;
-        objectLabels.clear();
+        objectLabels = new String[0];
         if (updatedRecognitions != null) {
             targetVisible = true;
             // step through the list of recognitions and display boundary info.
-            int i = 0;
-            for (Recognition recognition : updatedRecognitions) {
-                objectLabels.add(recognition.getLabel());
+            for (int i = 0; i<updatedRecognitions.size(); i++) {
+                objectLabels[i] = updatedRecognitions.get(i).getLabel();
+                i++;
             }
         }
     }
