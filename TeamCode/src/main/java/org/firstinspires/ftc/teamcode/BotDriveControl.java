@@ -47,7 +47,7 @@ public class BotDriveControl extends LinearOpMode {
     private static double triggerStart = 0.34;
     private static double triggerEnd = 0.1;
 
-    private Button fieldCentric = new Button();
+    private Button fieldCentric = new Button(true);
     public static Pose2d highGoal = new Pose2d(-5,-36, Math.toRadians(0));
     public static Pose2d powerShot = new Pose2d(2, -18.5, Math.toRadians(0));
     private boolean arePowerShooting = false;
@@ -87,7 +87,7 @@ public class BotDriveControl extends LinearOpMode {
         drive.usingVuforia = false;
 
         drive.initVision();
-        drive.Arm.setPosition(1);
+        drive.Arm.setPosition(0.97);
         drive.Trigger.setPosition(triggerStart);
         drive.Latch.setPosition(0.0);
 
@@ -108,6 +108,7 @@ public class BotDriveControl extends LinearOpMode {
                         case 2: drive.Arm.setPosition(0.4);
                         case 3: drive.Arm.setPosition(0.7);
                     }
+                    drive.telemetry.addData("wobble state", wobbleMode.getValue());
                     if(gamepad.a.justPressed()){
                         wobbleMode.cycle();
                     }
@@ -117,7 +118,7 @@ public class BotDriveControl extends LinearOpMode {
                         isFeeding.toggle();
                     }
                     if(isFeeding.isPressed()){
-                        drive.Intake.setPower(-0.3);
+                        drive.Intake.setPower(-0.6);
                     }
                     else {
                         //Intake Reversal
