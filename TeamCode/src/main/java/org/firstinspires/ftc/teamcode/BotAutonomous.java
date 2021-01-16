@@ -22,7 +22,7 @@ public class BotAutonomous extends LinearOpMode {
     private static double triggerStart = 0.34;
     private static double triggerEnd = 0.1;
     private static double armDown = 0.99;
-    private static double armUp = 0.1;
+    private static double armUp = 0.15;
     public static String stack = "None";
 
     private String ringCount;

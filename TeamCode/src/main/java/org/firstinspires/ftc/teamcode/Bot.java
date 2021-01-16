@@ -295,7 +295,7 @@ public class Bot extends MecanumDrive {
     
             //  Instantiate the Vuforia engine
             vuforia = ClassFactory.getInstance().createVuforia(parameters);
-            
+
         //Vuforia and Tensorflow Initialization
             VuforiaUtil.CameraState cameraState = new VuforiaUtil.CameraState(VuforiaLocalizer.CameraDirection.BACK, VuforiaUtil.CameraDirection.LANDSCAPE, VuforiaUtil.CameraDirection.FORWARD, 0, 0, 0, 0);
             vuforiaLocalizer = new UltimateGoalLocalizer(vuforia, cameraState);
