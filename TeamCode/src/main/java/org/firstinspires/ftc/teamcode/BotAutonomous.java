@@ -80,9 +80,9 @@ public class BotAutonomous extends LinearOpMode {
 
         Time.reset();
 
-        for(double i = 0; i <= 0.5; i+=0.0005){
-            drive.Arm.setPosition(i);
-        }
+//        for(double i = 0; i <= 0.5; i+=0.0005){
+//            drive.Arm.setPosition(i);
+//        }
 
         //Detects Starter Stack
         drive.followTrajectory(followStack);
@@ -109,7 +109,7 @@ public class BotAutonomous extends LinearOpMode {
 
         //Moves loaded wobble goal accordingly
         drive.followTrajectory(wobble1);
-        for(double i = 0.5; i <= 0.99; i+=0.0005){
+        for(double i = 0; i <= 0.99; i+=0.0005){
             drive.Arm.setPosition(i);
         }
         drive.followTrajectory(wobble1End);
@@ -143,5 +143,7 @@ public class BotAutonomous extends LinearOpMode {
 
         //Woohoo!! 56 points!!!
         drive.deactivateVision();
+        drive.telemetry.addData("none, single, quad", drive.none + ", " + drive.single + ", " + drive.quad);
+        drive.telemetry.addData("actually saw something: ",drive.actuallySawSomething);
     }
 }

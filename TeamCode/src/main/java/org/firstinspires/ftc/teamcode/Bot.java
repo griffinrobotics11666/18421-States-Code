@@ -119,6 +119,10 @@ public class Bot extends MecanumDrive {
     public UltimateGoalLocalizer vuforiaLocalizer;
     public static boolean usingVuforia = true;
     public UltimateGoalTfod tfod;
+    public boolean actuallySawSomething = false;
+    public int none;
+    public int single;
+    public int quad;
     public String detectedStack = null;
     private OpenCvCamera camera;
 
@@ -281,7 +285,7 @@ public class Bot extends MecanumDrive {
              * If no camera monitor is desired, use the parameter-less constructor instead (commented out below).
              */
             int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-            VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+            VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
     
             // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
     
@@ -298,7 +302,7 @@ public class Bot extends MecanumDrive {
             tfod = new UltimateGoalTfod(vuforia, hardwareMap);
 
         //OpenCV Initialization
-        camera = OpenCvCameraFactory.getInstance().createWebcam(Webcam, cameraMonitorViewId);
+//        camera = OpenCvCameraFactory.getInstance().createWebcam(Webcam, cameraMonitorViewId);
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
@@ -394,11 +398,11 @@ public class Bot extends MecanumDrive {
     public void initVision(){
 //        tfod.activate();
         vuforiaLocalizer.activate();
-        camera.openCameraDeviceAsync(() -> {
-            camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-            camera.setPipeline(new RingPipeline());
-            dashboard.startCameraStream(camera, 0);
-        });
+//        camera.openCameraDeviceAsync(() -> {
+//            camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+//            camera.setPipeline(new RingPipeline());
+//            dashboard.startCameraStream(camera, 0);
+//        });
     }
     
     public void deactivateVision(){
@@ -409,16 +413,17 @@ public class Bot extends MecanumDrive {
     public void detectStarterStack(int iterations){
         tfod.activate();
         detectedStack = null;
-        int none = 0;
-        int single = 0;
-        int quad = 0;
+        none = 0;
+        single = 0;
+        quad = 0;
         for(int i = 0; i<iterations; i++){
             tfod.update();
-            if(tfod.targetVisible && tfod.objectLabels.size() > 0){
-                if(tfod.objectLabels.get(0)=="Single"){
+            if(tfod.targetVisible && tfod.recognizedObjects.size() > 0){
+                actuallySawSomething = true;
+                if(tfod.recognizedObjects.get(0).getLabel()=="Single"){
                     single++;
                 }
-                else if(tfod.objectLabels.get(0)=="Quad"){
+                else if(tfod.recognizedObjects.get(0).getLabel()=="Quad"){
                     quad++;
                 }
             }
