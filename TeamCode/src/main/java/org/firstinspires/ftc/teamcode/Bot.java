@@ -526,8 +526,8 @@ public class Bot extends MecanumDrive {
         telemetry.addData("Intake current", Intake.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("Shooter current", Shooter.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("Num rings", numRings);
-        if(Intake.getCurrent(CurrentUnit.AMPS)<3.0){
-            if(feedingPeak>4.0){
+        if(Intake.getCurrent(CurrentUnit.AMPS)<2.0){
+            if(feedingPeak>3.0){
                 numRings++;
             }
             feedingPeak = 0.0;
