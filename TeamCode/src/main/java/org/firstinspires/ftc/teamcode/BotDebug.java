@@ -112,7 +112,7 @@ public class BotDebug extends LinearOpMode {
                     if(turnState.getValue()==2){
                         double headingInput = (headingController.update(currentPose.getHeading()) * BotConstants.kV) * BotConstants.TRACK_WIDTH;
 //                        headingController.update(currentPose.getHeading());
-                        if(Math.abs(headingController.getLastError())>Math.toRadians(5)){
+                        if(Math.abs(headingController.getLastError())>Math.toRadians(1)){
                             bot.setWeightedDrivePower(new Pose2d(new Vector2d(), headingInput));
                         }
                         else {
@@ -170,7 +170,7 @@ public class BotDebug extends LinearOpMode {
                 case WAIT: {
                     if(shootingClock.milliseconds()>= shootingCooldown){
                         shootingClock.reset();
-                        if(currShot.getValue()==currShot.numValues() || bot.numRings == 0){
+                        if(currShot.getValue()==currShot.numValues()){
                             shoot= ShootingState.AIM;
                             turnState.cycle();
                         }

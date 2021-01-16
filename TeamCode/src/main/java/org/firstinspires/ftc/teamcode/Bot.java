@@ -526,29 +526,29 @@ public class Bot extends MecanumDrive {
         telemetry.addData("Intake current", Intake.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("Shooter current", Shooter.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("Num rings", numRings);
-        if(Intake.getCurrent(CurrentUnit.AMPS)<2.6){
-            if(feedingPeak>3.0){
-                numRings++;
-            }
-            feedingPeak = 0.0;
-        }
-        else {
-            if(Intake.getCurrent(CurrentUnit.AMPS)>feedingPeak){
-                feedingPeak = Intake.getCurrent(CurrentUnit.AMPS);
-            }
-        }
-
-        if(Shooter.getCurrent(CurrentUnit.AMPS)<2.0){
-            if(shootingPeak>2.0 && shootingPeak<6.0){
-                numRings--;
-            }
-            shootingPeak = 0.0;
-        }
-        else {
-            if(Shooter.getCurrent(CurrentUnit.AMPS)>shootingPeak){
-                shootingPeak = Shooter.getCurrent(CurrentUnit.AMPS);
-            }
-        }
+//        if(Intake.getCurrent(CurrentUnit.AMPS)<2.6){
+//            if(feedingPeak>3.0){
+//                numRings++;
+//            }
+//            feedingPeak = 0.0;
+//        }
+//        else {
+//            if(Intake.getCurrent(CurrentUnit.AMPS)>feedingPeak){
+//                feedingPeak = Intake.getCurrent(CurrentUnit.AMPS);
+//            }
+//        }
+//
+//        if(Shooter.getCurrent(CurrentUnit.AMPS)<2.0){
+//            if(shootingPeak>2.0 && shootingPeak<6.0){
+//                numRings--;
+//            }
+//            shootingPeak = 0.0;
+//        }
+//        else {
+//            if(Shooter.getCurrent(CurrentUnit.AMPS)>shootingPeak){
+//                shootingPeak = Shooter.getCurrent(CurrentUnit.AMPS);
+//            }
+//        }
 
         //Finite State Machine stuffs
         switch (mode) {
