@@ -53,7 +53,7 @@ public class UltimateGoalTfod {
         List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
         targetVisible = false;
         objectLabels = new String[updatedRecognitions.size()];
-        if (updatedRecognitions != null) {
+        if (updatedRecognitions != null && !updatedRecognitions.isEmpty()) {
             targetVisible = true;
             // step through the list of recognitions and display boundary info.
             for (int i = 0; i<updatedRecognitions.size(); i++) {
