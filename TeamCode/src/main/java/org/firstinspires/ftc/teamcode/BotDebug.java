@@ -111,11 +111,12 @@ public class BotDebug extends LinearOpMode {
                     }
                     if(turnState.getValue()==2){
                         double headingInput = (headingController.update(currentPose.getHeading()) * BotConstants.kV) * BotConstants.TRACK_WIDTH;
-                        headingController.update(currentPose.getHeading());
+//                        headingController.update(currentPose.getHeading());
                         if(Math.abs(headingController.getLastError())>Math.toRadians(5)){
                             bot.setWeightedDrivePower(new Pose2d(new Vector2d(), headingInput));
                         }
                         else {
+                            bot.setWeightedDrivePower(new Pose2d());
                             turnState.cycle();
                             break;
                         }
