@@ -512,6 +512,8 @@ public class Bot extends MecanumDrive {
             /*There's an option to disable automatic vuforia localization (usingVuforia)
               And a velocity cap on it so that vuforia doesn't try to read blurry images
              */
+            fieldOverlay.setStroke("#eb3434");
+            DashboardUtil.drawRobot(fieldOverlay, vuforiaLocalizer.lastPose);
             telemetry.addData("supposed vuforia pose",vuforiaLocalizer.lastPose);
             if(currentVelocity.getX()+currentVelocity.getY()+currentVelocity.getHeading()<0.5 && usingVuforia) {
                 setPoseEstimate(vuforiaLocalizer.lastPose);
