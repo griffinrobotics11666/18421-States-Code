@@ -21,6 +21,7 @@ public class BotAutonomous extends LinearOpMode {
     private static double triggerEnd = 0.1;
     private static double armDown = 1;
     private static double armUp = 0.1;
+    public static String stack = "None";
 
     private String ringCount;
     private Trajectory A1;
@@ -89,7 +90,7 @@ public class BotAutonomous extends LinearOpMode {
         drive.detectStarterStack(500);
 
         ringCount = drive.detectedStack;
-        switch(drive.detectedStack){
+        switch(stack){
             case "None": {
                 wobble1 = A1;
                 wobble1End = A1End;
