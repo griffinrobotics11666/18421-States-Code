@@ -22,7 +22,7 @@ public class UltimateGoalTfod {
     private TFObjectDetector tfod;
 
     public boolean targetVisible = false;
-    public String[] objectLabels = new String[0];
+    public String[] objectLabels = new String[1];
 
     public UltimateGoalTfod(VuforiaLocalizer vuforia, @NotNull HardwareMap hardwareMap){
         this.vuforia = vuforia;
@@ -52,7 +52,7 @@ public class UltimateGoalTfod {
         // the last time that call was made.
         List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
         targetVisible = false;
-        objectLabels = new String[0];
+        objectLabels = new String[updatedRecognitions.size()];
         if (updatedRecognitions != null) {
             targetVisible = true;
             // step through the list of recognitions and display boundary info.
