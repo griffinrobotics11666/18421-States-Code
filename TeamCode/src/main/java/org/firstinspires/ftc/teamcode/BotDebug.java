@@ -113,7 +113,7 @@ public class BotDebug extends LinearOpMode {
                         double headingInput = (headingController.update(currentPose.getHeading())
                                 * BotConstants.kV)
                                 * BotConstants.TRACK_WIDTH;
-                        if(headingController.getLastError()<5){
+                        if(headingController.getLastError()<Math.toRadians(5)){
                             turnState.cycle();
                             break;
                         }
