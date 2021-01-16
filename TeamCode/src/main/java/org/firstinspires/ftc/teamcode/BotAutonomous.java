@@ -73,9 +73,9 @@ public class BotAutonomous extends LinearOpMode {
 
         drive.telemetry.addData("Ready!", "");
         drive.telemetry.update();
-        while(!isStarted()) {
-            drive.detectStarterStack(1);
-        }
+//        while(!isStarted()) {
+//            drive.detectStarterStack(1);
+//        }
         waitForStart();
 
         Time.reset();
@@ -86,7 +86,7 @@ public class BotAutonomous extends LinearOpMode {
 
         //Detects Starter Stack
         drive.followTrajectory(followStack);
-        drive.detectStarterStack(50);
+        drive.detectStarterStack(500);
 
         ringCount = drive.detectedStack;
         switch(drive.detectedStack){
@@ -112,6 +112,7 @@ public class BotAutonomous extends LinearOpMode {
         for(double i = 0; i <= 0.99; i+=0.0005){
             drive.Arm.setPosition(i);
         }
+        sleep(300);
         drive.followTrajectory(wobble1End);
 
         //Shoots 3 rings into High Goal
