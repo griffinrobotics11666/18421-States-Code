@@ -117,7 +117,7 @@ public class Bot extends MecanumDrive {
     private static final String VUFORIA_KEY = "AdYYXLj/////AAABmbrz6/MNLUKlnU5JIPwkiDQ5jX+GIjfuIEgba3irGu46iS/W1Q9Z55uLSl31zGtBX3k5prkoSK6UxLR9gyvyIwSzRe2FOFGHEvJ19uG+pqiJJfkaRb0mCUkrx4U/fH6+Agp+7lOHB8IYjziNSuBMgABbrii5tAQiXOGfGojY+IQ/enBoy+zWiwVBx9cPRBsEHu+ipK6RXQe7CeODCRN8anBfAsn5b2BoO9lcGE0DgZdRysyByQ4wuwNQxKjba18fnzSDWpm12Brx3Ao1vkGYxTyLQfsON5VotphvWwoZpoyD+Iav/yQmOxrQDBLox6SosF8jqG9sUC5LAAdiRIWr6sNRrGzeCtsHSJBplHboPMB3";
     private VuforiaLocalizer vuforia;
     public UltimateGoalLocalizer vuforiaLocalizer;
-    public boolean usingVuforia = true;
+    public static boolean usingVuforia = true;
     public UltimateGoalTfod tfod;
     public String detectedStack = null;
     private OpenCvCamera camera;
@@ -526,8 +526,8 @@ public class Bot extends MecanumDrive {
         telemetry.addData("Intake current", Intake.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("Shooter current", Shooter.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("Num rings", numRings);
-        if(Intake.getCurrent(CurrentUnit.AMPS)<4.0){
-            if(feedingPeak>5.0){
+        if(Intake.getCurrent(CurrentUnit.AMPS)<3.0){
+            if(feedingPeak>4.0){
                 numRings++;
             }
             feedingPeak = 0.0;
