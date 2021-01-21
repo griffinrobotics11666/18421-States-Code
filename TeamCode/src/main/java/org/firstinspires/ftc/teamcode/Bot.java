@@ -120,9 +120,9 @@ public class Bot extends MecanumDrive {
     public static boolean usingVuforia = true;
     public UltimateGoalTfod tfod;
     public boolean actuallySawSomething = false;
-    public int none;
-    public int single;
-    public int quad;
+    public double none;
+    public double single;
+    public double quad;
     public String detectedStack = null;
     private OpenCvCamera camera;
 
@@ -410,37 +410,22 @@ public class Bot extends MecanumDrive {
         vuforiaLocalizer.deactivate();
     }
 
-    public void detectStarterStack(int iterations){
+    public void detectStarterStack(int iterations) {
         tfod.activate();
-        detectedStack = null;
-        none = 0;
-        single = 0;
-        quad = 0;
         for(int i = 0; i<iterations; i++){
             tfod.update();
             if(tfod.targetVisible){
                 actuallySawSomething = true;
                 if(tfod.objectLabels[0]=="Single"){
-                    single++;
+                    detectedStack = "Single";
                 }
                 else if(tfod.objectLabels[0]=="Quad"){
-                    quad++;
+                    detectedStack = "Quad";
                 }
             }
             else {
-                none++;
             }
         }
-        if(none > single && none > quad){
-            detectedStack = "None";
-        }
-        else if(single > none && single > quad){
-            detectedStack = "Single";
-        }
-        else if(quad > single && quad > none){
-            detectedStack = "Quad";
-        }
-        tfod.deactivate();
     }
 
 //    public void detectStarterStackAsync(int iterations){

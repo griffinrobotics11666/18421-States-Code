@@ -19,10 +19,11 @@ public class UltimateGoalTfod {
     private static final String LABEL_FIRST_ELEMENT = "Quad";
     private static final String LABEL_SECOND_ELEMENT = "Single";
     private VuforiaLocalizer vuforia;
-    private TFObjectDetector tfod;
+    public TFObjectDetector tfod;
 
     public boolean targetVisible = false;
     public String[] objectLabels = new String[1];
+    public List<Recognition> recognitions = new ArrayList<>();
 
     public UltimateGoalTfod(VuforiaLocalizer vuforia, @NotNull HardwareMap hardwareMap){
         this.vuforia = vuforia;
@@ -49,7 +50,8 @@ public class UltimateGoalTfod {
     public void update(){
         // getUpdatedRecognitions() will return null if no new information is available since
         // the last time that call was made.
-        List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+        List<Recognition> updatedRecognitions = tfod.getRecognitions();
+        recognitions = updatedRecognitions;
         targetVisible = false;
         objectLabels = new String[1];
         if (updatedRecognitions != null) {

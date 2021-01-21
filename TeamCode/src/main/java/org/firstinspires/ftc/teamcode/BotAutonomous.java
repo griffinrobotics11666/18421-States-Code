@@ -22,6 +22,7 @@ public class BotAutonomous extends LinearOpMode {
     private static double triggerStart = 0.34;
     private static double triggerEnd = 0.1;
     private static double armDown = 0.99;
+    private static double armMove = 0.7;
     private static double armUp = 0.15;
     public static String stack = "None";
 
@@ -64,7 +65,7 @@ public class BotAutonomous extends LinearOpMode {
                 .splineToSplineHeading(new Pose2d(25, -36, Math.toRadians(-90)), 0.0)
                 .build();
         Trajectory B1End = drive.trajectoryBuilder(B1.end(), 0)
-                .lineToSplineHeading(new Pose2d(B1.end().getX()-6, B1.end().getY()+6, Math.toRadians(-180.0)))
+                .lineToSplineHeading(new Pose2d(B1.end().getX()-6, B1.end().getY()+6, Math.toRadians(0.0)))
                 .build();
         Trajectory C1 = drive.trajectoryBuilder(followStack.end(), Math.toRadians(-90))
                 .splineToConstantHeading(new Vector2d(-37,-56), 0)
@@ -83,16 +84,22 @@ public class BotAutonomous extends LinearOpMode {
 
         Time.reset();
 
-//        for(double i = 0; i <= 0.5; i+=0.0005){
-//            drive.Arm.setPosition(i);
-//        }
+        for(double i = drive.Arm.getPosition(); i <= armMove; i+=0.0005){
+            drive.Arm.setPosition(i);
+        }
 
         //Detects Starter Stack
         drive.followTrajectory(followStack);
-        drive.detectStarterStack(500);
+        drive.detectedStack = "None";
+        drive.tfod.activate();
+        for(int i = 0; i < 12; i++){
+            drive.detectStarterStack(100);
+            sleep(100);
+        }
+        drive.tfod.deactivate();
 
         ringCount = drive.detectedStack;
-        switch(stack){
+        switch(ringCount){
             case "None": {
                 wobble1 = A1;
                 wobble1End = A1End;
@@ -112,7 +119,7 @@ public class BotAutonomous extends LinearOpMode {
 
         //Moves loaded wobble goal accordingly
         drive.followTrajectory(wobble1);
-        for(double i = armUp; i <= armDown; i+=0.0005){
+        for(double i = drive.Arm.getPosition(); i <= armDown; i+=0.0005){
             drive.Arm.setPosition(i);
         }
         sleep(300);
