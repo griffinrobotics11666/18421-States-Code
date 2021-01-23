@@ -24,14 +24,8 @@ public class BotAutonomous extends LinearOpMode {
     private static double armDown = 0.99;
     private static double armMove = 0.7;
     private static double armUp = 0.15;
-    public static String stack = "None";
 
     private String ringCount;
-    private Trajectory A1;
-    private Trajectory A1End;
-    private Trajectory B1;
-    private Trajectory B1End;
-    private Pose2d C;
 
     private Trajectory wobble1;
     private Trajectory wobble1End;
@@ -55,10 +49,11 @@ public class BotAutonomous extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(-45,-33),0)
                 .build();
         Trajectory A1 =  drive.trajectoryBuilder(followStack.end())
-                .splineToSplineHeading(new Pose2d(12,-38, Math.toRadians(-180)), 0.0)
+                .splineToSplineHeading(new Pose2d(12,-44, Math.toRadians(-180)), 0.0)
                 .build();
         Trajectory A1End = drive.trajectoryBuilder(A1.end())
-                .lineToSplineHeading(new Pose2d(A1.end().getX()+6, A1.end().getY()+6, Math.toRadians(-180.0)))
+                .lineToSplineHeading(new Pose2d(A1.end().getX()+6, A1.end().getY(), Math.toRadians(-180.0)))
+                .strafeTo(new Vector2d(A1.end().getX()+6, A1.end().getY()+6))
                 .build();
         Trajectory B1 = drive.trajectoryBuilder(followStack.end())
                 .splineTo(new Vector2d(-23, -20),0.0)
@@ -88,17 +83,10 @@ public class BotAutonomous extends LinearOpMode {
             drive.Arm.setPosition(i);
         }
 
-        //Detects Starter Stack
+        //Moves to detect starter stack
         drive.followTrajectory(followStack);
-        drive.detectedStack = "None";
-        drive.tfod.activate();
-        for(int i = 0; i < 12; i++){
-            drive.detectStarterStack(100);
-            sleep(100);
-        }
-        drive.tfod.deactivate();
-
-        ringCount = drive.detectedStack;
+        //Detects the starter stack
+        ringCount = drive.detectStarterStack(1000);
         switch(ringCount){
             case "None": {
                 wobble1 = A1;
@@ -139,12 +127,12 @@ public class BotAutonomous extends LinearOpMode {
             sleep(300);
         }
 
-        //TODO: Pick up starter stack?
+        //TODO: Pick up (and shoot) starter stack?
         //TODO: Pick up second wobble goal?
 
         //Parks on the white line
         Trajectory parkLine = drive.trajectoryBuilder(drive.getPoseEstimate())
-                .forward(18)
+                .strafeTo(new Vector2d(drive.getPoseEstimate().getX(), 10))
                 .build();
         drive.followTrajectory(parkLine);
 

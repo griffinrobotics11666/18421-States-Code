@@ -45,6 +45,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -116,14 +117,9 @@ public class Bot extends MecanumDrive {
     //Vision Goodies
     private static final String VUFORIA_KEY = "AdYYXLj/////AAABmbrz6/MNLUKlnU5JIPwkiDQ5jX+GIjfuIEgba3irGu46iS/W1Q9Z55uLSl31zGtBX3k5prkoSK6UxLR9gyvyIwSzRe2FOFGHEvJ19uG+pqiJJfkaRb0mCUkrx4U/fH6+Agp+7lOHB8IYjziNSuBMgABbrii5tAQiXOGfGojY+IQ/enBoy+zWiwVBx9cPRBsEHu+ipK6RXQe7CeODCRN8anBfAsn5b2BoO9lcGE0DgZdRysyByQ4wuwNQxKjba18fnzSDWpm12Brx3Ao1vkGYxTyLQfsON5VotphvWwoZpoyD+Iav/yQmOxrQDBLox6SosF8jqG9sUC5LAAdiRIWr6sNRrGzeCtsHSJBplHboPMB3";
     private VuforiaLocalizer vuforia;
-    public UltimateGoalLocalizer vuforiaLocalizer;
+    private UltimateGoalLocalizer vuforiaLocalizer;
     public static boolean usingVuforia = true;
-    public UltimateGoalTfod tfod;
-    public boolean actuallySawSomething = false;
-    public double none;
-    public double single;
-    public double quad;
-    public String detectedStack = null;
+    private UltimateGoalTfod tfod;
     private OpenCvCamera camera;
 
     //Finite State Machine Stuffs
@@ -410,56 +406,30 @@ public class Bot extends MecanumDrive {
         vuforiaLocalizer.deactivate();
     }
 
-    public void detectStarterStack(int iterations) {
+    public String detectStarterStack(int iterations, int milliseconds) {
         tfod.activate();
         for(int i = 0; i<iterations; i++){
             tfod.update();
-            if(tfod.targetVisible){
-                actuallySawSomething = true;
-                if(tfod.objectLabels[0]=="Single"){
-                    detectedStack = "Single";
-                }
-                else if(tfod.objectLabels[0]=="Quad"){
-                    detectedStack = "Quad";
-                }
-            }
-            else {
+            try {
+                Thread.sleep(milliseconds);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
+        tfod.deactivate();
+        return tfod.visibleTarget();
     }
 
-//    public void detectStarterStackAsync(int iterations){
-//        tfod.activate();
-//        detectedStack = null;
-//        int none = 0;
-//        int single = 0;
-//        int quad = 0;
-//        for(int i = 0; i<iterations; i++){
-//            tfod.update();
-//            if(tfod.targetVisible && tfod.objectLabels.size() > 0){
-//                if(tfod.objectLabels.get(0)=="Single"){
-//                    single++;
-//                }
-//                else if(tfod.objectLabels.get(0)=="Quad"){
-//                    quad++;
-//                }
-//            }
-//            else {
-//                none++;
-//            }
-//            update();
-//        }
-//        if(none > single && none > quad){
-//            detectedStack = "None";
-//        }
-//        else if(single > none && single > quad){
-//            detectedStack = "Single";
-//        }
-//        else if(quad > single && quad > none){
-//            detectedStack = "Quad";
-//        }
-//        tfod.deactivate();
-//    }
+    public String detectStarterStack(int milliseconds) {
+        ElapsedTime time = new ElapsedTime();
+        tfod.activate();
+        time.reset();
+        while(time.milliseconds() < milliseconds) {
+            tfod.update();
+        }
+        tfod.deactivate();
+        return tfod.visibleTarget();
+    }
 
     public void update() {
         updatePoseEstimate();
@@ -489,9 +459,6 @@ public class Bot extends MecanumDrive {
         telemetry.addData("yError", lastError.getY());
         telemetry.addData("headingError", lastError.getHeading());
 
-        telemetry.addData("none, single, quad", none + ", " + single + ", " + quad);
-        telemetry.addData("actually saw something: ",actuallySawSomething);
-
 //        Vuforia Localization
         if(vuforiaLocalizer.targetVisible){
             /*There's an option to disable automatic vuforia localization (usingVuforia)
@@ -500,20 +467,12 @@ public class Bot extends MecanumDrive {
             fieldOverlay.setStroke("#eb3434");
             DashboardUtil.drawRobot(fieldOverlay, vuforiaLocalizer.lastPose);
             telemetry.addData("supposed vuforia pose",vuforiaLocalizer.lastPose);
+            assert currentVelocity != null;
             if(currentVelocity.getX()+currentVelocity.getY()+currentVelocity.getHeading()<0.5 && usingVuforia) {
                 setPoseEstimate(vuforiaLocalizer.lastPose);
             }
         }
         vuforiaLocalizer.update();
-
-        //Tfod Ring Detection
-//        if(tfod.targetVisible){
-//            detectedStack = tfod.objectLabels.get(0);
-//        }
-//        else {
-//            detectedStack = null;
-//        }
-//        tfod.update();
 
         //OpenCV debugging
 //        camera.setPipeline(new RingPipeline());

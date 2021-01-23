@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
-import org.firstinspires.ftc.teamcode.util.tracking.Tracker;
-import org.firstinspires.ftc.teamcode.util.tracking.TrackerKCF;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect2d;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.tracking.Tracker;
+import org.opencv.tracking.TrackerKCF;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 public class TrackerPipeline extends OpenCvPipeline {

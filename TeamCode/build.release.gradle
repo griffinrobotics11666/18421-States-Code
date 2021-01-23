@@ -12,3 +12,18 @@ dependencies {
     implementation 'com.acmerobotics.dashboard:dashboard:0.3.10'
     implementation 'org.openftc:easyopencv:1.4.3'
 }
+//This is to get the OpenCV conrib modules - might slow deploy times though
+configurations.all {
+    resolutionStrategy {
+        dependencySubstitution {
+            substitute module('org.openftc:opencv-repackaged') with module('com.quickbirdstudios:opencv:4.3.0-contrib')
+        }
+    }
+}
+android {
+    packagingOptions {
+        exclude 'lib/arm64-v8a/libc++_shared.so'
+        exclude 'lib/armeabi-v7a/libc++_shared.so'
+    }
+}
+//
