@@ -5,10 +5,12 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.path.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.util.roadrunnerEx.Obstacle;
 
 @Autonomous(name = "GVF Obstacle Avoidance Test", group = "Discopolus")
+@Disabled
 public class BotPathAvoidanceTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
