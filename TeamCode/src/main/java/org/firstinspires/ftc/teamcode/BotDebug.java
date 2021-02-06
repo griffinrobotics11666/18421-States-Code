@@ -3,8 +3,11 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
+import com.acmerobotics.roadrunner.drive.DriveSignal;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.kinematics.Kinematics;
+import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -58,6 +61,8 @@ public class BotDebug extends LinearOpMode {
     public static double MinStartVelo = 0;
     private Cycle currShot = new Cycle(3);
     private PIDFController headingController = new PIDFController(Bot.HEADING_PID);
+    private PIDFController lateralController = new PIDFController(Bot.TRANSLATIONAL_PID);
+    private PIDFController axialController = new PIDFController(Bot.TRANSLATIONAL_PID);
 
     public static double AngleOffset = 0;
     private double targetAngle;
@@ -90,6 +95,7 @@ public class BotDebug extends LinearOpMode {
             bot.Arm.setPosition(armPosition);
             bot.Latch.setPosition(latchPosition);
             Pose2d currentPose = bot.getPoseEstimate();
+            Pose2d currentVelocity = bot.getPoseVelocity();
             bot.telemetry.addData("Shooter Velocity",bot.Shooter.getVelocity(AngleUnit.RADIANS));
             bot.telemetry.addData("computed Shooter Velocity", (bot.Shooter.getVelocity()/28)*2*Math.PI);
             bot.telemetry.addData("Shooter rpm",(bot.Shooter.getVelocity()/28)*60);
@@ -107,6 +113,7 @@ public class BotDebug extends LinearOpMode {
                     if(gamepad.x.justPressed() && turnState.getValue() == 1 && currentPose.getX()<=LineRequirement){
                         turnState.cycle();
                         targetAngle = Math.atan2(highGoal.minus(currentPose.vec()).getY(),highGoal.minus(currentPose.vec()).getX())-currentPose.getHeading()-AngleOffset;
+                        headingController.reset();
                         headingController.setTargetPosition(targetAngle);
                     }
                     if(turnState.getValue()==2){
@@ -184,22 +191,49 @@ public class BotDebug extends LinearOpMode {
             }
 
             if(canDrive && turnState.getValue()==1){
-                // Create a vector from the gamepad x/y inputs
-                // Then, rotate that vector by the inverse of that heading
-                Vector2d input = new Vector2d(
-                        -gamepad1.left_stick_y,
-                        -gamepad1.left_stick_x
-                ).rotated(-bot.getPoseEstimate().getHeading());
-
-                // Pass in the rotated input + right stick value for rotation
-                // Rotation is not part of the rotated input thus must be passed in separately
-                bot.setWeightedDrivePower(
-                        new Pose2d(
-                                input.getX(),
-                                input.getY(),
-                                -gamepad1.right_stick_x
-                        )
+                Pose2d targetVel = new Pose2d(
+                        new Vector2d(
+                                -gamepad1.left_stick_y,
+                                -gamepad1.left_stick_x
+                        ).div(new Vector2d(
+                                -gamepad1.left_stick_y,
+                                -gamepad1.left_stick_x
+                        ).norm()).times(BotConstants.MAX_VEL),
+                        -gamepad1.right_stick_x*BotConstants.MAX_ANG_VEL
                 );
+                Pose2d targetRobotVel = Kinematics.fieldToRobotVelocity(currentPose,targetVel);
+
+                axialController.setTargetPosition(targetRobotVel.getX());
+                lateralController.setTargetPosition(targetRobotVel.getY());
+                headingController.setTargetPosition(targetRobotVel.getHeading());
+
+                double axialCorrection = axialController.update(currentVelocity.getX());
+                double lateralCorrection = lateralController.update(currentVelocity.getX());
+                double headingCorrection = headingController.update(currentVelocity.getHeading());
+
+                Pose2d correctedVelocity = targetRobotVel.plus(new Pose2d(
+                        axialCorrection,
+                        lateralCorrection,
+                        headingCorrection
+                ));
+
+                bot.setDriveSignal(new DriveSignal(correctedVelocity));
+//                // Create a vector from the gamepad x/y inputs
+//                // Then, rotate that vector by the inverse of that heading
+//                Vector2d input = new Vector2d(
+//                        -gamepad1.left_stick_y,
+//                        -gamepad1.left_stick_x
+//                ).rotated(-bot.getPoseEstimate().getHeading());
+//
+//                // Pass in the rotated input + right stick value for rotation
+//                // Rotation is not part of the rotated input thus must be passed in separately
+//                bot.setWeightedDrivePower(
+//                        new Pose2d(
+//                                input.getX(),
+//                                input.getY(),
+//                                -gamepad1.right_stick_x
+//                        )
+//                );
             }
             gamepad.update();
             bot.update();
